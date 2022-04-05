@@ -11,7 +11,7 @@ impl InventoryCommand {
     where
         P: AsRef<Path>,
     {
-        let cmd = Command::new(path.as_ref().to_path_buf());
+        let cmd = Command::new(path.as_ref());
         Self { cmd }
     }
 
