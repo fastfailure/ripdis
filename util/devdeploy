@@ -1,11 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Dependencies:
 # rsync
 
 set -ue
 
-NAMES=("ipdisserver" "ipdisscan")
+NAMES=(
+    "ipdisserver"
+    "ipdisscan"
+)
 
 TARGET="armv7-unknown-linux-gnueabihf"
 
