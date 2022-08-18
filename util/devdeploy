@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# Dependencies:
+# rsync
+
+set -ue
+
+NAMES=(
+    "ipdisserver"
+    "ipdisscan"
+)
+
+TARGET="armv7-unknown-linux-gnueabihf"
+
+build_debug () {
+    cargo build --target=${TARGET}
+}
+
+deploy_dev () {
+    build_debug
+    local devboard="${1}"
+    local target_dir="target/${TARGET}/debug"
+    for name in "${NAMES[@]}"; do
+        read -r -p "Deploying ${name} to ${devboard}. Continue? [Y/n] " resp
+        case "${resp}" in
+            [nN][oO]|[nN]) exit 0 ;;
+            [yY][eE][sS]|[yY]|"")
+                rsync -Phpv "${target_dir}/ceam${name}" "${devboard}:/usr/local/bin/${name}"
+                ;;
+            *)
+                echo "Unexpected answer: ${resp}" >&2
+                exit 2
+                ;;
+        esac
+    done
+}
+
+
+help="
+Build and deploy to development taget \n
+Usage: \n
+\t ./util/devdeploy <TARGET_SSH_DEVBOARD>
+"
+
+if [ ${#} -ne 1 ]; then
+    echo -e "${help}" >&2
+    exit 2
+fi
+
+devboard="${1}"
+deploy_dev "${devboard}"

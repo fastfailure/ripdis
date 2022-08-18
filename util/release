@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# Dependencies:
+# jq
+
+set -ue
+
+TARGET="armv7-unknown-linux-gnueabihf"
+ARCH="armhf"
+
+NAMES=("ipdisserver" "ipdisscan")
+
+get_version () {
+    local name="${1}"
+    local metadata
+    metadata="$(cargo metadata --format-version 1)"
+    local version
+    version="$(echo "${metadata}" | jq '.packages[] | select(.name == "'"${name}"'") | .version')"
+    echo "${version}" | tr -d '"'
+}
+
+build_release () {
+    cargo build --target=${TARGET} --release
+}
+
+rename_binary () {
+    local name="${1}"
+    local target_dir="target/${TARGET}/release"
+    local version
+    version="$(get_version "${name}")"
+    local new_name="${name}-${ARCH}-${version}"
+    ln -vf "${target_dir}/${name}" "${target_dir}/${new_name}"
+}
+
+prepare_releases () {
+    build_release
+    for name in "${NAMES[@]}"; do
+        rename_binary "${name}"
+    done
+}
+
+prepare_releases

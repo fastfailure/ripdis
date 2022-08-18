@@ -1,0 +1,39 @@
+---
+# Edited from https://gist.github.com/LukeMathWalker/d98fa8d0fc5394b347adf734ef0e85ec
+#
+# Also see: https://doc.rust-lang.org/cargo/guide/continuous-integration.html
+#
+image: rust:latest
+
+default:
+    before_script:
+        - rustc --version
+        - cargo --version
+
+stages:
+    - test
+
+test-code:
+    stage: test
+    script:
+        - cargo test
+        - cargo install cargo-tarpaulin
+        - cargo tarpaulin --ignore-tests
+
+lint-code:
+    stage: test
+    script:
+        - rustup component add clippy
+        - cargo clippy -- -D warnings
+
+format-code:
+    stage: test
+    script:
+        - rustup component add rustfmt
+        - cargo fmt -- --check
+
+audit-code:
+    stage: test
+    script:
+        - cargo install cargo-audit
+        - cargo audit
