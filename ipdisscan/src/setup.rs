@@ -1,10 +1,8 @@
 use color_eyre::eyre::Report;
-use tracing::instrument;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
-#[instrument]
 pub fn setup() -> Result<(), Report> {
     install_stderr_tracing();
     color_eyre::install()?;

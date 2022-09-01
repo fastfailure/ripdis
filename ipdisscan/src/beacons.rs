@@ -4,7 +4,9 @@ use ipdisserver::answers::Answer;
 use std::collections::HashMap;
 use std::fmt;
 use std::net::IpAddr;
-use tracing::{instrument, trace};
+use std::thread::sleep;
+use std::time::Duration;
+use tracing::trace;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BeaconAnswer {
@@ -20,7 +22,6 @@ impl fmt::Display for BeaconAnswer {
 
 type BeaconAnswers = HashMap<IpAddr, BeaconAnswer>;
 
-#[instrument]
 pub fn run(
     channel_receiving_end: Receiver<BeaconAnswer>,
     output_channel_send_end: Sender<Vec<BeaconAnswer>>,
@@ -35,6 +36,7 @@ pub fn run(
             new_beacon_notification_channel_send_end.clone(),
         )?;
         output_channel_send_end.try_send(servers.values().map(|x| x.to_owned()).collect())?;
+        sleep(Duration::from_secs_f64(0.1)); // Ease CPU load
     }
 }
 
@@ -46,7 +48,6 @@ pub fn init_output_channel() -> (Sender<Vec<BeaconAnswer>>, Receiver<Vec<BeaconA
     unbounded()
 }
 
-#[instrument]
 fn beacons_update(
     mut beacons: BeaconAnswers,
     channel_receiving_end: Receiver<BeaconAnswer>,

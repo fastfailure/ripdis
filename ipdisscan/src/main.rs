@@ -23,7 +23,7 @@ fn main() -> Result<(), Report> {
         .about("Search for active instances of ipdisserver and get system informations.")
         .arg(
             Arg::with_name(PORT_OPT)
-                .short("p")
+                .short('p')
                 .long("scanner-source-port")
                 .value_name("PORT")
                 .help("UDP port used to receive ipdisserver answers. Default: 1902.")
@@ -31,7 +31,7 @@ fn main() -> Result<(), Report> {
         )
         .arg(
             Arg::with_name(TARGET_PORT_OPT)
-                .short("b")
+                .short('b')
                 .long("broadcast-target-port")
                 .value_name("TARGET-PORT")
                 .help("ipdisserver listening UDP port. Default: 1901.")
@@ -39,7 +39,7 @@ fn main() -> Result<(), Report> {
         )
         .arg(
     Arg::with_name(ADDR_OPT)
-                .short("a")
+                .short('a')
                 .long("broadcast-addr")
                 .value_name("ADDR")
                 .help("Broadcasting address. Default is the limited broadcast address: 255.255.255.255. You can also use any subnet-directed broadcast address, e.g. 192.168.1.255 (for the network 192.168.1.0/24).")
@@ -47,7 +47,7 @@ fn main() -> Result<(), Report> {
         )
         .arg(
             Arg::with_name(SIGNATURE_OPT)
-                .short("s")
+                .short('s')
                 .long("signature")
                 .value_name("SIGN")
                 .multiple(true)

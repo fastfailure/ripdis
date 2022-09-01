@@ -37,3 +37,9 @@ audit-code:
     script:
         - cargo install cargo-audit
         - cargo audit
+
+audit-deps:
+    stage: test
+    script:
+        - cargo install cargo-outdated
+        - cargo outdated --color=always --root-deps-only --exit-code 255 -v

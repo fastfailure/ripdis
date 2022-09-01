@@ -19,7 +19,7 @@ fn main() -> Result<(), Report> {
         .about("Answer with system info to ipdisscan broadcasts.")
         .arg(
             Arg::with_name(PORT_OPT)
-                .short("p")
+                .short('p')
                 .long("port")
                 .value_name("PORT")
                 .help("Listening port. Default: 1901.")
@@ -27,7 +27,7 @@ fn main() -> Result<(), Report> {
         )
         .arg(
             Arg::with_name(ADDR_OPT)
-                .short("a")
+                .short('a')
                 .long("listening-addr")
                 .value_name("ADDR")
                 .help("Default: 0.0.0.0")
@@ -35,7 +35,7 @@ fn main() -> Result<(), Report> {
         )
         .arg(
             Arg::with_name(SIGNATURES_OPT)
-                .short("s")
+                .short('s')
                 .long("signatures-file")
                 .value_name("SIGNATURES_FILE")
                 .help("Path of a file with accepted signatures, one per line. UTF-8 characters are allowed. Each signature length must be 128 bytes at most. If not specified a single signature is accepted: `ipdisbeacon`.")
@@ -43,7 +43,7 @@ fn main() -> Result<(), Report> {
         )
         .arg(
             Arg::with_name(INVENTORY_OPT)
-                .short("f")
+                .short('f')
                 .long("answer-file")
                 .value_name("ANSWER_FILE")
                 .help(r#"Specify a list of files to execute, the output will be added to the answer. The output must be in the format `key0=value0\nkey1=value1\n...`. Repeat the option for each file."#)
@@ -53,7 +53,7 @@ fn main() -> Result<(), Report> {
         )
         .arg(
             Arg::with_name(JOURNALD_OPT)
-                .short("j")
+                .short('j')
                 .long("log-to-journald")
                 .required(false)
                 .takes_value(false)

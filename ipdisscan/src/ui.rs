@@ -6,6 +6,7 @@ use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
 use std::io::{self, Stdout};
+use std::thread::sleep;
 use std::time::Duration;
 use tui::backend::CrosstermBackend;
 use tui::layout::{Alignment, Constraint, Direction, Layout};
@@ -22,6 +23,7 @@ pub fn run(channel_receiving_end: Receiver<Vec<BeaconAnswer>>) -> Result<(), Rep
     let mut app = App::default();
     app.next();
     loop {
+        sleep(Duration::from_secs_f64(0.05)); // Ease CPU load, even if at the cost of reducing UI responsiveness
         app.update_answers(channel_receiving_end.clone())?;
         draw_frame(&mut terminal, &mut app)?;
         match app.act_keypress()? {

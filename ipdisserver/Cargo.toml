@@ -1,6 +1,6 @@
 [package]
 name = "ipdisserver"
-version = "0.1.1-beta.2"
+version = "0.1.1-rc.1"
 edition = "2021"
 description = "Answer to ipdisscan UDP packets with system informations."
 license = "MPL-2.0"
@@ -8,15 +8,15 @@ license = "MPL-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = "2.33.3"
+clap = "3.2"
 serde_json = "1.0"
 gethostname = "0.2"
 bytes = "1.1.0"
-color-eyre = "0.5.11"
+color-eyre = "0.6"
 tracing = "0.1.29"
 tracing-error = "0.2.0"
 tracing-subscriber = "0.3.1"
-tracing-journald = "0.2"
+tracing-journald = "0.3"
 
 [dev-dependencies]
 tracing-test = "0.2"

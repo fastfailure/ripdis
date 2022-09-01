@@ -1,10 +1,9 @@
 use color_eyre::eyre::Report;
-use tracing::{error, instrument};
+use tracing::error;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
-#[instrument]
 pub fn setup(log_to_journald: bool) -> Result<(), Report> {
     match log_to_journald {
         false => install_stderr_tracing(),
