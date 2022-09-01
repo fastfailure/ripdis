@@ -4,7 +4,7 @@ use std::fmt;
 
 /// Signature string sent by scanner. Beacon will answer only if matches.
 /// Must be shorter than RECV_BUFFER_LENGHT or it will be truncated.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Signature(pub Bytes);
 
 impl fmt::Display for Signature {

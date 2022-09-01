@@ -50,7 +50,7 @@ impl FromCmdOutput for BeaconInfos {
 }
 
 /// Message returned to the scanner (JSON formatted).
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Answer(pub Bytes);
 
 impl fmt::Display for Answer {

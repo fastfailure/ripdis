@@ -6,7 +6,7 @@ use std::fmt;
 use std::net::IpAddr;
 use tracing::{instrument, trace};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BeaconAnswer {
     pub addr: IpAddr,
     pub payload: Answer,
