@@ -38,26 +38,46 @@ repos:
           - id: name-tests-test  # This verifies that test files are named correctly
           - id: pretty-format-json # This hook sets a standard for formatting JSON files.
             args: [--autofix, --no-sort-keys]
+          - id: requirements-txt-fixer  # Sorts entries in requirements.txt
           - id: trailing-whitespace  # This hook trims trailing whitespace.
 
-  #
-  # YAML
+    #
+    # YAML
+    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+      rev: 0.2.2
+      hooks:
+          - id: yamlfmt
+            name: YAML formatting
     - repo: https://github.com/adrienverge/yamllint.git
       rev: v1.27.1
       hooks:
           - id: yamllint
             args: [-d relaxed]
             name: YAML linting
-    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-      rev: 0.2.2
-      hooks:
-          - id: yamlfmt
-            name: YAML formatting
 
-  #
-  # Markdown
+    #
+    # Prettier
+    - repo: https://github.com/pre-commit/mirrors-prettier
+      rev: v3.0.0-alpha.0
+      hooks:
+          - id: prettier
+            types_or: [html, css, javascript, ts]
+            name: Web languages formatting
+            exclude: /static/assets/lib/
+
+    #
+    # HTML/Jinja
+    - repo: https://github.com/thibaudcolas/curlylint
+      rev: v0.13.1
+      hooks:
+          - id: curlylint
+            name: HTML templates linting
+            exclude: /static/assets/lib/
+
+    #
+    # Markdown
     - repo: https://github.com/executablebooks/mdformat
-      rev: 0.7.15
+      rev: 0.7.16
       hooks:
           - id: mdformat
             additional_dependencies:
@@ -68,17 +88,87 @@ repos:
                 - mdformat-web
             name: Markdown formatting
 
-  #
-  # Shell scripts
+    #
+    # reStructuredText
+    - repo: https://github.com/lorman/pre-commit-rstcheck
+      rev: 0decfca3d2b4f8354e84739d7e5c47a4401984d4
+      hooks:
+          - id: rstcheck
+            name: reStructuredText syntax check
+
+    #
+    # Shell scripts
+    - repo: https://github.com/lovesegfault/beautysh
+      rev: v6.2.1
+      hooks:
+          - id: beautysh
+            name: Shell scripts formatting
     - repo: https://github.com/shellcheck-py/shellcheck-py
-      # alt: https://github.com/detailyang/pre-commit-shell
       rev: v0.8.0.4
       hooks:
           - id: shellcheck
-            name: Lint shell scripts
+            name: Shell scripts linting
 
- #
- # Rust
+    #
+    # Python
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v2.37.3
+      hooks:
+          - id: pyupgrade
+            name: Upgrade Python syntax for newer versions of the language
+            args: [--py39-plus]
+    - repo: https://github.com/myint/docformatter
+      rev: v1.5.0
+      hooks:
+          - id: docformatter
+            name: Formats Python docstrings to follow PEP257
+            args: [--in-place]
+    - repo: https://github.com/asottile/blacken-docs
+      rev: v1.12.1
+      hooks:
+          - id: blacken-docs
+            name: Python documentation formatting
+            additional_dependencies: [black==22.8.0]
+    - repo: https://github.com/MarcoGorelli/absolufy-imports
+      rev: v0.3.1
+      hooks:
+          - id: absolufy-imports
+            name: Convert Python relative imports to absolute
+    - repo: https://github.com/pycqa/isort
+      rev: 5.10.1
+      hooks:
+          - id: isort
+            name: Python imports sorting
+          - id: isort
+            name: Python stub files imports sorting
+            types: [pyi]
+    - repo: https://github.com/psf/black
+      rev: 22.8.0
+      hooks:
+          - id: black
+            name: Python formatting with Black
+    - repo: https://github.com/pre-commit/pygrep-hooks
+      rev: v1.9.0
+      hooks:
+          - id: python-check-blanket-noqa  # Enforce that noqa annotations always occur with specific codes. Sample annotations: # noqa: F401, # noqa: F401,W203
+          - id: python-check-blanket-type-ignore  # Enforce that # type: ignore annotations always occur with specific codes. Sample annotations: # type: ignore[attr-defined], # type: ignore[attr-defined, name-defined]
+          - id: python-check-mock-methods  # Prevent common mistakes of assert mck.not_called(), assert mck.called_once_with(...) and mck.assert_called.
+          - id: python-no-eval  # A quick check for the eval() built-in function
+          - id: python-no-log-warn  # A quick check for the deprecated .warn() method of python loggers
+          - id: python-use-type-annotations  # Enforce that python3.6+ type annotations are used instead of type comments
+          - id: rst-backticks  # Detect common mistake of using single backticks when writing rst
+          - id: rst-directive-colons  # Detect mistake of rst directive not ending with double colon
+          - id: rst-inline-touching-normal  # Detect mistake of inline code touching normal text in rst
+          - id: text-unicode-replacement-char  # Forbid files which have a UTF-8 Unicode replacement character
+    - repo: https://github.com/pycqa/flake8
+      rev: 5.0.4
+      hooks:
+          - id: flake8
+            name: Python style and security standards enforcement
+            additional_dependencies: [pep8-naming, flake8-builtins, flake8-comprehensions, flake8-bugbear, flake8-black]
+
+    #
+    # Rust
     - repo: https://github.com/doublify/pre-commit-rust
       rev: v1.0
       hooks:
