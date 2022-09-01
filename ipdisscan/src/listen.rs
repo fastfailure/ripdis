@@ -3,11 +3,10 @@ use color_eyre::eyre::Report;
 use crossbeam::channel::Sender;
 use ipdisserver::answers::Answer;
 use std::net::UdpSocket;
-use tracing::{debug, info, instrument, trace};
+use tracing::{debug, info, trace};
 
 const RECV_BUFFER_LENGHT: usize = 2usize.pow(10); // 1KiB
 
-#[instrument]
 pub fn run(socket: &UdpSocket, input_channel_send_end: Sender<BeaconAnswer>) -> Result<(), Report> {
     {
         info!(?socket, "Listening for beacon answers.");
@@ -17,7 +16,6 @@ pub fn run(socket: &UdpSocket, input_channel_send_end: Sender<BeaconAnswer>) -> 
     }
 }
 
-#[instrument]
 fn serve_single(
     socket: &UdpSocket,
     input_channel_send_end: Sender<BeaconAnswer>,

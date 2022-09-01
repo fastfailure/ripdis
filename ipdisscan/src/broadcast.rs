@@ -8,11 +8,10 @@ use std::net::SocketAddr;
 use std::net::UdpSocket;
 use std::thread;
 use std::time::Duration;
-use tracing::{debug, info, instrument, trace};
+use tracing::{debug, info, trace};
 
 const SCANNER_ADDR: Ipv4Addr = Ipv4Addr::UNSPECIFIED; // "0.0.0.0"
 
-#[instrument]
 pub fn run(
     socket: &UdpSocket,
     new_beacon_notification_channel_recv_end: Receiver<()>,
@@ -70,7 +69,6 @@ pub fn init_notification_channel() -> (Sender<()>, Receiver<()>) {
     bounded(1)
 }
 
-#[instrument]
 fn send_single(
     socket: &UdpSocket,
     broadcast_addr: Ipv4Addr,
@@ -83,6 +81,7 @@ fn send_single(
             .send_to(&signature.0, beacon_broadcast_addr)
             .expect("Failed broadcasting signature");
         trace!(
+            ?socket,
             dest = %beacon_broadcast_addr,
             payload = ?signature.0,
             "Broadcasted."

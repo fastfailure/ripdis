@@ -13,7 +13,6 @@ use tracing::{info, instrument, trace};
 const RECV_BUFFER_LENGHT: usize = 128; // update ipdisserver and ipdisscan CLI documentation if changed
 const RATE_LIMIT_TIMEOUT: Duration = Duration::from_secs(10); // do not accept more than a request every 10 s from each IP
 
-#[instrument]
 pub fn run(conf: &ServerConfig) -> Result<(), Report> {
     let socket = UdpSocket::bind(format!("{}:{}", conf.listening_addr, conf.port))?;
     info!(?socket, "Listening for scanner requests.");

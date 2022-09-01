@@ -4,7 +4,7 @@ use ipdisserver::answers::Answer;
 use std::collections::HashMap;
 use std::fmt;
 use std::net::IpAddr;
-use tracing::{instrument, trace};
+use tracing::trace;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BeaconAnswer {
@@ -20,7 +20,6 @@ impl fmt::Display for BeaconAnswer {
 
 type BeaconAnswers = HashMap<IpAddr, BeaconAnswer>;
 
-#[instrument]
 pub fn run(
     channel_receiving_end: Receiver<BeaconAnswer>,
     output_channel_send_end: Sender<Vec<BeaconAnswer>>,
@@ -46,7 +45,6 @@ pub fn init_output_channel() -> (Sender<Vec<BeaconAnswer>>, Receiver<Vec<BeaconA
     unbounded()
 }
 
-#[instrument]
 fn beacons_update(
     mut beacons: BeaconAnswers,
     channel_receiving_end: Receiver<BeaconAnswer>,
