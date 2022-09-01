@@ -85,9 +85,19 @@ fn main() -> Result<(), Report> {
     let socket_c = socket.try_clone()?;
     let (input_channel_send_end, input_channel_receive_end) = beacons::init_input_channel();
     let (output_channel_send_end, output_channel_receive_end) = beacons::init_output_channel();
+    let (new_beacon_notification_channel_send_end, new_beacon_notification_channel_receive_end) =
+        broadcast::init_notification_channel();
     thread::spawn(move || listen::run(&socket_c, input_channel_send_end));
-    thread::spawn(move || broadcast::run(&socket, &conf));
-    thread::spawn(move || beacons::run(input_channel_receive_end, output_channel_send_end));
+    thread::spawn(move || {
+        broadcast::run(&socket, new_beacon_notification_channel_receive_end, &conf)
+    });
+    thread::spawn(move || {
+        beacons::run(
+            input_channel_receive_end,
+            output_channel_send_end,
+            new_beacon_notification_channel_send_end,
+        )
+    });
     ui::run(output_channel_receive_end)?;
     Ok(())
 }
