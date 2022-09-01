@@ -10,7 +10,7 @@ pub const SERVER_PORT_DEFAULT: u16 = 1901;
 pub const SIGNATURE_DEFAULT: &str = "ipdisbeacon"; // must be shorter than RECV_BUFFER_LENGHT
 const LISTENING_ADDR_DEFAULT: Ipv4Addr = Ipv4Addr::UNSPECIFIED; // "0.0.0.0"
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 /// Server configurations.
 pub struct ServerConfig<'a> {
     pub port: u16,
