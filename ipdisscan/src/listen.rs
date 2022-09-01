@@ -8,20 +8,23 @@ use tracing::{debug, info, instrument, trace};
 const RECV_BUFFER_LENGHT: usize = 2usize.pow(10); // 1KiB
 
 #[instrument]
-pub fn run(socket: &UdpSocket, channel_send_end: Sender<BeaconAnswer>) -> Result<(), Report> {
+pub fn run(socket: &UdpSocket, input_channel_send_end: Sender<BeaconAnswer>) -> Result<(), Report> {
     {
         info!(?socket, "Listening for beacon answers.");
         loop {
-            serve_single(socket, channel_send_end.clone())?;
+            serve_single(socket, input_channel_send_end.clone())?;
         }
     }
 }
 
 #[instrument]
-fn serve_single(socket: &UdpSocket, channel_send_end: Sender<BeaconAnswer>) -> Result<(), Report> {
+fn serve_single(
+    socket: &UdpSocket,
+    input_channel_send_end: Sender<BeaconAnswer>,
+) -> Result<(), Report> {
     let beacon_answer = receive(socket)?;
     trace!(?beacon_answer.addr, %beacon_answer.payload, "Putting in queue.");
-    channel_send_end.send(beacon_answer)?;
+    input_channel_send_end.send(beacon_answer)?;
     Ok(())
 }
 
