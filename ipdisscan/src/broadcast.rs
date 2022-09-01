@@ -6,7 +6,7 @@ use ipdisserver::signature::Signature;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
 use std::net::UdpSocket;
-use std::thread;
+use std::thread::sleep;
 use std::time::Duration;
 use tracing::{debug, info, trace};
 
@@ -91,7 +91,7 @@ fn send_single(
 }
 
 fn wait_duty_cycle(scan_period: f64) {
-    thread::sleep(Duration::from_secs_f64(scan_period));
+    sleep(Duration::from_secs_f64(scan_period));
 }
 
 #[cfg(test)]

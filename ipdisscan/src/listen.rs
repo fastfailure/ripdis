@@ -8,11 +8,9 @@ use tracing::{debug, info, trace};
 const RECV_BUFFER_LENGHT: usize = 2usize.pow(10); // 1KiB
 
 pub fn run(socket: &UdpSocket, input_channel_send_end: Sender<BeaconAnswer>) -> Result<(), Report> {
-    {
-        info!(?socket, "Listening for beacon answers.");
-        loop {
-            serve_single(socket, input_channel_send_end.clone())?;
-        }
+    info!(?socket, "Listening for beacon answers.");
+    loop {
+        serve_single(socket, input_channel_send_end.clone())?;
     }
 }
 

@@ -4,6 +4,8 @@ use ipdisserver::answers::Answer;
 use std::collections::HashMap;
 use std::fmt;
 use std::net::IpAddr;
+use std::thread::sleep;
+use std::time::Duration;
 use tracing::trace;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -34,6 +36,7 @@ pub fn run(
             new_beacon_notification_channel_send_end.clone(),
         )?;
         output_channel_send_end.try_send(servers.values().map(|x| x.to_owned()).collect())?;
+        sleep(Duration::from_secs_f64(0.1)); // Ease CPU load
     }
 }
 
