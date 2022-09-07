@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+# Dependencies, arm32:
+# build-essential gcc-arm-linux-gnueabihf jq
+# On Debian, on ~/.cargo/config.toml:
+# [target.armv7-unknown-linux-gnueabihf]
+# linker = "arm-linux-gnueabihf-gcc"
+
+# Dependencies, arm64:
+# build-essential gcc-aarch64-linux-gnu jq
+# On Debian, on ~/.cargo/config.toml:
+# [target.aarch64-unknown-linux-gnu]
+# linker = "aarch64-linux-gnu-gcc"
+
+usage () {
+    echo "Usage: $0 -t <target> -d <dist_dir> -n <name1> [-n <name2>]" 1>&2
+    exit 1
+}
+
+names=()
+
+optstring="n:t:d:"
+while getopts $optstring opt; do
+    case "${opt}" in
+        t)
+            target=${OPTARG}
+            ;;
+        d)
+            dist_dir=${OPTARG}
+            ;;
+        n)
+            names+=("${OPTARG}")
+            ;;
+        *)
+            usage
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${target}" ] || [ -z "${dist_dir}" ]; then
+    usage
+fi
+
+set -ue
+
+get_version () {
+    local name="${1}"
+    local metadata
+    metadata="$(cargo metadata --format-version 1)"
+    local version
+    version="$(echo "${metadata}" | jq '.packages[] | select(.name == "'"${name}"'") | .version')"
+    echo "${version}" | tr -d '"'
+}
+
+build_release () {
+    cargo build --target="${target}" --release
+}
+
+dist_binary () {
+    local name="${1}"
+    local target_dir="target/${target}/release"
+    local version
+    version="$(get_version "${name}")"
+    local arch
+    arch="$(echo "${target}" | cut -f 1 -d '-')"  # first segment of target
+    local full_name="${name}-${arch}-${version}"
+    cp -vb "${target_dir}/${name}" "${dist_dir}/${full_name}"
+}
+
+prepare_releases () {
+    build_release
+    for name in "${names[@]}"; do
+        dist_binary "${name}" "${dist_dir}"
+    done
+}
+
+prepare_releases
