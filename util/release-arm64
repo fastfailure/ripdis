@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# Dependencies: see ./util/crosscompile
+
+set -ue
+
+DIST_DIR=$1
+
+./util/crosscompile \
+    -t "aarch64-unknown-linux-gnu" \
+    -n "ipdisserver" \
+    -n "ipdisscan" \
+    -d "${DIST_DIR}"
