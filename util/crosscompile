@@ -74,4 +74,5 @@ prepare_releases () {
     done
 }
 
+rustup target add "${target}"
 prepare_releases
