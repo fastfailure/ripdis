@@ -1,11 +1,8 @@
 use crate::conf::ScannerConfig;
 use color_eyre::eyre::Report;
-use crossbeam::channel::TryRecvError;
-use crossbeam::channel::{bounded, Receiver, Sender};
-use ipdisserver::signature::Signature;
-use std::net::Ipv4Addr;
-use std::net::SocketAddr;
-use std::net::UdpSocket;
+use crossbeam::channel::{bounded, Receiver, Sender, TryRecvError};
+use ipdisserver::Signature;
+use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
 use std::thread::sleep;
 use std::time::Duration;
 use tracing::{debug, info, trace};

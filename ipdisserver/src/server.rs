@@ -152,7 +152,7 @@ mod test {
     #[test]
     #[tracing_test::traced_test]
     fn test_serve_localhost() {
-        let conf = ServerConfig::default();
+        let conf = ServerConfig::dummy();
         let sending_socket = UdpSocket::bind(format!("{}:{}", Ipv4Addr::UNSPECIFIED, 0)).unwrap();
         let receiving_socket = sending_socket
             .try_clone()
