@@ -4,6 +4,9 @@ use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
+const DEFAULT_STDERR_LOG_LVL: &str = "warn";
+const DEFAULT_JOURNAL_LOG_LVL: &str = "info";
+
 pub fn setup(log_to_journald: bool) -> Result<(), Report> {
     match log_to_journald {
         false => install_stderr_tracing(),
@@ -17,7 +20,7 @@ pub fn setup(log_to_journald: bool) -> Result<(), Report> {
 }
 
 fn install_stderr_tracing() {
-    let filter_layer = get_envfilter("warn");
+    let filter_layer = get_envfilter(DEFAULT_STDERR_LOG_LVL);
     let fmt_layer = tracing_subscriber::fmt::layer()
         .with_target(false)
         .with_writer(std::io::stderr);
@@ -29,7 +32,7 @@ fn install_stderr_tracing() {
 }
 
 fn install_journald_tracing() -> Result<(), Report> {
-    let filter_layer = get_envfilter("info");
+    let filter_layer = get_envfilter(DEFAULT_JOURNAL_LOG_LVL);
     let fmt_layer = tracing_journald::layer()?;
     tracing_subscriber::registry()
         .with(filter_layer)
