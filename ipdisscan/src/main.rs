@@ -13,8 +13,8 @@ use ipdisscan::{
 };
 use ipdisserver::{Signature, SERVER_PORT_DEFAULT, SIGNATURE_DEFAULT};
 use std::net::Ipv4Addr;
+use std::path::PathBuf;
 use std::thread;
-// use tracing::trace;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -44,10 +44,17 @@ struct Cli {
 
     #[arg(long, default_value_t = SCAN_PERIOD_DEFAULT)]
     scan_period: f64,
+
+    /// File where logs will be emitted.
+    /// By default it's $TMPDIR/ipdisscan.log or /tmp/ipdisscan.log on Linux.
+    /// Set to /dev/null to suppress logs.
+    // Cannot emit logs to stderr, it would destroy the UI!
+    #[arg(short, long)]
+    log_file: Option<PathBuf>,
 }
 
 fn main() -> Result<(), Report> {
-    setup::setup()?;
+    setup::eyre_setup()?;
     let cli = Cli::parse();
     let signatures: Vec<Signature> = match cli.signature.as_deref() {
         Some(s) => vec![Signature::from(s)],
@@ -56,13 +63,16 @@ fn main() -> Result<(), Report> {
             Signature::from(EXTRA_SIGNATURE_DEFAULT),
         ],
     };
+    let log_file = cli.log_file.unwrap_or_else(ScannerConfig::default_log_file);
     let conf = ScannerConfig {
         port: cli.port,
         scan_period: cli.scan_period,
         broadcast_addr: cli.broadcast_addr,
         target_port: cli.target_port,
+        log_file,
         signatures,
     };
+    setup::log_setup(&conf.log_file)?;
 
     let socket = socket_setup(conf.port)?;
     let socket_c = socket.try_clone()?;
