@@ -1,6 +1,6 @@
 use color_eyre::eyre::ContextCompat;
 use color_eyre::eyre::Report;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
@@ -12,8 +12,11 @@ pub fn eyre_setup() -> Result<(), Report> {
     Ok(())
 }
 
-pub fn log_setup(log_file: &Path) -> Result<(), Report> {
-    install_file_tracing(log_file)
+pub fn log_setup(log_file: &Option<PathBuf>) -> Result<(), Report> {
+    if let Some(f) = log_file {
+        install_file_tracing(f)?;
+    }
+    Ok(())
 }
 
 fn install_file_tracing(log_file: &Path) -> Result<(), Report> {
@@ -23,13 +26,12 @@ fn install_file_tracing(log_file: &Path) -> Result<(), Report> {
             .parent()
             .wrap_err_with(|| format!("{:?} path has no parent", log_file))?,
         log_file
-            .file_stem()
+            .file_name()
             .wrap_err_with(|| format!("{:?} path has no file name", log_file))?,
     );
-    let (non_blocking_appender, _guard) = tracing_appender::non_blocking(file_appender);
     let fmt_layer = tracing_subscriber::fmt::layer()
         .with_target(false)
-        .with_writer(non_blocking_appender);
+        .with_writer(file_appender);
     tracing_subscriber::registry()
         .with(filter_layer)
         .with(ErrorLayer::default())
