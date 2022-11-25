@@ -3,7 +3,7 @@ use color_eyre::eyre::Report;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines};
 use std::net::Ipv4Addr;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tracing::info;
 
 pub const SERVER_PORT_DEFAULT: u16 = 1901;
@@ -12,14 +12,14 @@ pub const LISTENING_ADDR_DEFAULT: Ipv4Addr = Ipv4Addr::UNSPECIFIED; // "0.0.0.0"
 
 /// Server configurations.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ServerConfig<'a> {
+pub struct ServerConfig {
     pub port: u16,
     pub listening_addr: Ipv4Addr,
     pub signatures: Vec<Signature>,
-    pub inventory_files: Vec<&'a Path>,
+    pub inventory_files: Vec<PathBuf>,
 }
 
-impl ServerConfig<'_> {
+impl ServerConfig {
     /// Read a sequence of Signature from a file, one per line.
     /// Empty lines are ignored.
     pub fn parse_signatures_file(path: &Path) -> Result<Vec<Signature>, Report> {
