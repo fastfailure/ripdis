@@ -6,7 +6,7 @@ use color_eyre::eyre::Report;
 use std::collections::HashSet;
 use std::net::SocketAddr;
 use std::net::UdpSocket;
-use std::path::Path;
+use std::path::PathBuf;
 use std::time::{Duration, SystemTime};
 use tracing::{info, instrument, trace};
 
@@ -98,7 +98,7 @@ impl WrappedSystemTime for DummyClock {
 fn serve_single<'a>(
     socket: &UdpSocket,
     expected_signatures: &[Signature],
-    inventory_files: &[&Path],
+    inventory_files: &[PathBuf],
     mut rate_limiter: RateLimiter<'a>,
 ) -> Result<RateLimiter<'a>, Report> {
     let (addr, received) = receive(socket)?;
@@ -152,7 +152,7 @@ mod test {
     #[test]
     #[tracing_test::traced_test]
     fn test_serve_localhost() {
-        let conf = ServerConfig::default();
+        let conf = ServerConfig::dummy();
         let sending_socket = UdpSocket::bind(format!("{}:{}", Ipv4Addr::UNSPECIFIED, 0)).unwrap();
         let receiving_socket = sending_socket
             .try_clone()

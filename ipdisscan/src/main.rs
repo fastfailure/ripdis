@@ -1,85 +1,77 @@
-use clap::{App, Arg};
+mod setup;
+
+use clap::Parser;
 use color_eyre::eyre::Report;
-use ipdisscan::beacons;
-use ipdisscan::broadcast;
-use ipdisscan::broadcast::socket_setup;
-use ipdisscan::conf::ScannerConfig;
-use ipdisscan::listen;
-use ipdisscan::setup::setup;
-use ipdisscan::ui;
-use ipdisserver::signature::Signature;
+use ipdisscan::conf::{
+    ScannerConfig, BROADCAST_ADDR_DEFAULT, EXTRA_SIGNATURE_DEFAULT, SCANNER_PORT_DEFAULT,
+    SCAN_PERIOD_DEFAULT,
+};
+use ipdisscan::{
+    beacons,
+    broadcast::{self, socket_setup},
+    listen, ui,
+};
+use ipdisserver::{Signature, SERVER_PORT_DEFAULT, SIGNATURE_DEFAULT};
 use std::net::Ipv4Addr;
-use std::str::FromStr;
+use std::path::PathBuf;
 use std::thread;
-use tracing::trace;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    /// UDP port used to receive ipdisserver answers.
+    #[arg(short, long, default_value_t = SCANNER_PORT_DEFAULT)]
+    port: u16,
+
+    /// Broadcasting address.
+    /// Default is the limited broadcast address: 255.255.255.255.
+    /// You can also use any subnet-directed broadcast address,
+    /// e.g. 192.168.1.255 (for the network 192.168.1.0/24).
+    #[arg(short, long, default_value_t = BROADCAST_ADDR_DEFAULT)]
+    broadcast_addr: Ipv4Addr,
+
+    /// ipdisserver listening UDP port.
+    #[arg(short, long, default_value_t = SERVER_PORT_DEFAULT)]
+    target_port: u16,
+
+    /// String used to recognize ipdisserver instances.
+    /// UTF-8 characters are allowed.
+    /// Signature length must be 128 bytes at most.
+    /// [default: (NB: multiple signatures):
+    /// `ipdisbeacon` and `pang-supremacy-maritime-revoke-afterglow`
+    /// (the second one is for backward compatibility)]
+    #[arg(short, long)]
+    signature: Option<String>,
+
+    /// Scan period, in seconds.
+    #[arg(long, default_value_t = SCAN_PERIOD_DEFAULT)]
+    scan_period: f64,
+
+    /// File where logs will be emitted.
+    // Cannot emit logs to stderr, it would destroy the UI!
+    #[arg(short, long)]
+    log_file: Option<PathBuf>,
+}
 
 fn main() -> Result<(), Report> {
-    const PORT_OPT: &str = "port";
-    const TARGET_PORT_OPT: &str = "target_port";
-    const ADDR_OPT: &str = "addr";
-    const SIGNATURE_OPT: &str = "signatures";
-    let matches = App::new("ipdisscan")
-        .version("1.0.0")
-        .about("Search for active instances of ipdisserver and get system informations.")
-        .arg(
-            Arg::with_name(PORT_OPT)
-                .short('p')
-                .long("scanner-source-port")
-                .value_name("PORT")
-                .help("UDP port used to receive ipdisserver answers. Default: 1902.")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name(TARGET_PORT_OPT)
-                .short('b')
-                .long("broadcast-target-port")
-                .value_name("TARGET-PORT")
-                .help("ipdisserver listening UDP port. Default: 1901.")
-                .takes_value(true),
-        )
-        .arg(
-    Arg::with_name(ADDR_OPT)
-                .short('a')
-                .long("broadcast-addr")
-                .value_name("ADDR")
-                .help("Broadcasting address. Default is the limited broadcast address: 255.255.255.255. You can also use any subnet-directed broadcast address, e.g. 192.168.1.255 (for the network 192.168.1.0/24).")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name(SIGNATURE_OPT)
-                .short('s')
-                .long("signature")
-                .value_name("SIGN")
-                .multiple(true)
-                .number_of_values(1)
-                .help("Strings used to recognize ipdisserver instances. UTF-8 characters are allowed. Each signature length must be 128 bytes at most. This option can be used more than once. Default: `ipdisbeacon` and `pang-supremacy-maritime-revoke-afterglow` (the second one is for backward compatibility).")
-                .takes_value(true),
-        )
-        .get_matches();
-
-    setup()?;
-    trace!(?matches);
-
-    let mut conf = ScannerConfig::default();
-    if matches.is_present(PORT_OPT) {
-        conf.port = matches.value_of(PORT_OPT).unwrap().parse()?;
-    }
-    if matches.is_present(TARGET_PORT_OPT) {
-        conf.target_port = matches.value_of(TARGET_PORT_OPT).unwrap().parse()?;
-    }
-    if matches.is_present(ADDR_OPT) {
-        let str_broadcast_addr = matches.value_of(ADDR_OPT).unwrap().parse::<String>()?;
-        conf.broadcast_addr = Ipv4Addr::from_str(&str_broadcast_addr)?;
-    }
-    if matches.is_present(SIGNATURE_OPT) {
-        conf.signatures = matches
-            .values_of(SIGNATURE_OPT)
-            .unwrap()
-            .into_iter()
-            .map(Signature::from)
-            .collect();
-        // replace default signatures
-    }
+    setup::eyre_setup()?;
+    let cli = Cli::parse();
+    let signatures: Vec<Signature> = match cli.signature.as_deref() {
+        Some(s) => vec![Signature::from(s)],
+        None => vec![
+            Signature::from(SIGNATURE_DEFAULT),
+            Signature::from(EXTRA_SIGNATURE_DEFAULT),
+        ],
+    };
+    let conf = ScannerConfig {
+        port: cli.port,
+        scan_period: cli.scan_period,
+        broadcast_addr: cli.broadcast_addr,
+        target_port: cli.target_port,
+        log_file: cli.log_file,
+        signatures,
+    };
+    setup::log_setup(&conf.log_file)?;
 
     let socket = socket_setup(conf.port)?;
     let socket_c = socket.try_clone()?;

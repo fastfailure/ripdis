@@ -27,8 +27,6 @@ simil-YAML format, being continuously updated.
 
 Run `ipdisscan --help` for the CLI documentation.
 
-Logs go to standard error.
-
 ### Environment variables
 
 `RUST_LOG` changes logs verbosity.

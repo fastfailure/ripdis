@@ -1,36 +1,25 @@
-use crate::signature::Signature;
+use crate::Signature;
 use color_eyre::eyre::Report;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines};
 use std::net::Ipv4Addr;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tracing::info;
 
 pub const SERVER_PORT_DEFAULT: u16 = 1901;
 pub const SIGNATURE_DEFAULT: &str = "ipdisbeacon"; // must be shorter than RECV_BUFFER_LENGHT
-const LISTENING_ADDR_DEFAULT: Ipv4Addr = Ipv4Addr::UNSPECIFIED; // "0.0.0.0"
+pub const LISTENING_ADDR_DEFAULT: Ipv4Addr = Ipv4Addr::UNSPECIFIED; // "0.0.0.0"
 
-#[derive(Debug, Clone, PartialEq, Eq)]
 /// Server configurations.
-pub struct ServerConfig<'a> {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ServerConfig {
     pub port: u16,
     pub listening_addr: Ipv4Addr,
     pub signatures: Vec<Signature>,
-    pub inventory_files: Vec<&'a Path>,
+    pub inventory_files: Vec<PathBuf>,
 }
 
-impl Default for ServerConfig<'_> {
-    fn default() -> Self {
-        Self {
-            port: SERVER_PORT_DEFAULT,
-            listening_addr: LISTENING_ADDR_DEFAULT,
-            signatures: vec![Signature::from(SIGNATURE_DEFAULT)],
-            inventory_files: Vec::new(),
-        }
-    }
-}
-
-impl ServerConfig<'_> {
+impl ServerConfig {
     /// Read a sequence of Signature from a file, one per line.
     /// Empty lines are ignored.
     pub fn parse_signatures_file(path: &Path) -> Result<Vec<Signature>, Report> {
@@ -43,6 +32,19 @@ impl ServerConfig<'_> {
             };
         }
         Ok(signatures)
+    }
+
+    pub fn dummy() -> Self {
+        let port = SERVER_PORT_DEFAULT;
+        let listening_addr = LISTENING_ADDR_DEFAULT;
+        let signatures = vec![SIGNATURE_DEFAULT.into()];
+        let inventory_files = Vec::new();
+        Self {
+            port,
+            listening_addr,
+            signatures,
+            inventory_files,
+        }
     }
 }
 
@@ -59,21 +61,6 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    #[tracing_test::traced_test]
-    fn test_conf() {
-        let conf = ServerConfig::default();
-        assert_eq!(
-            conf,
-            ServerConfig {
-                port: 1901,
-                listening_addr: Ipv4Addr::new(0, 0, 0, 0),
-                signatures: vec![Signature::from("ipdisbeacon")],
-                inventory_files: Vec::new(),
-            }
-        );
-    }
 
     #[test]
     #[tracing_test::traced_test]
