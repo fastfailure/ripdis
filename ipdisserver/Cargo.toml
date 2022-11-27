@@ -11,7 +11,7 @@ license = "MPL-2.0"
 bytes = "1.1.0"
 clap = { version = "4.0", features = ['derive'] }
 color-eyre = "0.6"
-gethostname = "0.3"
+gethostname = "0.4"
 serde_json = "1.0"
 tracing = "0.1.29"
 tracing-error = "0.2.0"
