@@ -9,7 +9,7 @@ use ipdisscan::conf::{
 use ipdisscan::{
     beacons,
     broadcast::{self, socket_setup},
-    listen, ui,
+    gui, listen, tui,
 };
 use ipdisserver::{Signature, SERVER_PORT_DEFAULT, SIGNATURE_DEFAULT};
 use std::net::Ipv4Addr;
@@ -27,11 +27,11 @@ struct Cli {
     /// Default is the limited broadcast address: 255.255.255.255.
     /// You can also use any subnet-directed broadcast address,
     /// e.g. 192.168.1.255 (for the network 192.168.1.0/24).
-    #[arg(short, long, default_value_t = BROADCAST_ADDR_DEFAULT)]
+    #[arg(short = 'a', long, default_value_t = BROADCAST_ADDR_DEFAULT)]
     broadcast_addr: Ipv4Addr,
 
     /// ipdisserver listening UDP port.
-    #[arg(short, long, default_value_t = SERVER_PORT_DEFAULT)]
+    #[arg(long, default_value_t = SERVER_PORT_DEFAULT)]
     target_port: u16,
 
     /// String used to recognize ipdisserver instances.
@@ -40,17 +40,22 @@ struct Cli {
     /// [default: (NB: multiple signatures):
     /// `ipdisbeacon` and `pang-supremacy-maritime-revoke-afterglow`
     /// (the second one is for backward compatibility)]
-    #[arg(short, long)]
+    #[arg(long)]
     signature: Option<String>,
 
     /// Scan period, in seconds.
-    #[arg(long, default_value_t = SCAN_PERIOD_DEFAULT)]
+    #[arg(default_value_t = SCAN_PERIOD_DEFAULT)]
     scan_period: f64,
 
     /// File where logs will be emitted.
     // Cannot emit logs to stderr, it would destroy the UI!
     #[arg(short, long)]
     log_file: Option<PathBuf>,
+
+    /// Use terminal user interface instead of graphical one (in case the software is compiled with
+    /// GUI support).
+    #[arg(short, long)]
+    tui: bool,
 }
 
 fn main() -> Result<(), Report> {
@@ -90,6 +95,14 @@ fn main() -> Result<(), Report> {
             new_beacon_notification_channel_send_end,
         )
     });
-    ui::run(output_channel_receive_end)?;
+
+    #[cfg(feature = "gui")]
+    {
+        if !cli.tui {
+            gui::run(output_channel_receive_end)?;
+            return Ok(());
+        }
+    }
+    tui::run(output_channel_receive_end)?;
     Ok(())
 }
