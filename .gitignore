@@ -1,2 +1,6 @@
 /target
-Cargo.lock
+
+# Devenv
+.devenv*
+devenv.local.nix
+.pre-commit-config.yaml
