@@ -15,5 +15,5 @@ indent_size = unset
 [*.lock]
 indent_size = unset
 
-[*.{html,nix}]
+[*.{nix,html,json}]
 indent_size = 2

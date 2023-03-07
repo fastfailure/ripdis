@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Dependencies: curl, jq
+# Mandatory env vars: TRIPLET, NAME
+# Mandatory env vars from CI: CI_API_V4_URL, CI_PROJECT_ID, CI_JOB_TOKEN
+# Optional env vars: DEBUG (if set to anything, version is "dev" and debug build is used)
+
+set -e
+
+DEBUG_VERSION="dev"
+
+# Print version of given workspace package.
+get_version() {
+    local name="$1"
+    version=$(cargo metadata --format-version 1 --no-deps | jq '.packages[] | select(.name == "'"$name"'") | {version}' | jq --exit-status -r .version)
+    echo "$version" # TODO check it starts with a number
+}
+
+main() {
+    local name=$1
+    local bin_name=$name
+    local version
+    local type
+
+    if [[ -z $DEBUG ]]; then
+        type="release"
+        version=$(get_version "$name")
+    else
+        type="debug"
+        version="$DEBUG_VERSION"
+    fi
+
+    set -u
+    local file="target/${TRIPLET}/${type}/${bin_name}"
+    local url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${name}/${version}+${TRIPLET}/${bin_name}"
+    echo "Uploading: ${file} -> ${url}"
+    curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "$file" "$url"
+}
+
+if [[ -z $1 ]]; then
+    echo >&2 "name argument is mandatory"
+    exit 1
+fi
+
+main "$1"

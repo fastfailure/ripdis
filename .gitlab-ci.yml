@@ -1,45 +1,129 @@
 ---
-# Edited from https://gist.github.com/LukeMathWalker/d98fa8d0fc5394b347adf734ef0e85ec
-#
-# Also see: https://doc.rust-lang.org/cargo/guide/continuous-integration.html
-#
-image: rust:latest
+# https://docs.gitlab.com/ee/ci/
+# https://hub.docker.com/_/rust
+# https://docs.gitlab.com/ee/ci/yaml/script.html
+
+variables:
+    CARGO_HOME: $CI_PROJECT_DIR/.cargo # necessary for dependency caching
+
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+    # https://docs.gitlab.com/ee/user/application_security/secret_detection/index.html
+
+.install_amd64_build_deps: &install_amd64_build_deps
+    - echo -e "\e[0Ksection_start:`date +%s`:builddeps\r\e[0KInstall build dependencies"
+    - apt-get update -y
+    - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libgtk-3-dev libayatana-appindicator3-dev
+    - echo -e "\e[0Ksection_end:`date +%s`:builddeps\r\e[0K"
+
+.install_armv7_build_deps: &install_armv7_build_deps
+    - echo -e "\e[0Ksection_start:`date +%s`:crossdeps\r\e[0KInstall cross-compilation dependencies"
+    - apt-get update -y
+    - apt-get install -y build-essential gcc-arm-linux-gnueabihf pkg-config
+    - export PKG_CONFIG_PATH="/usr/lib/arm-linux-gnueabihf/pkgconfig"
+    - export PKG_CONFIG_ALLOW_CROSS="true"
+    # <https://www.modio.se/cross-compiling-rust-binaries-to-armv7.html>
+    - export TRIPLET="armv7-unknown-linux-gnueabihf"
+    - export LINKER=\"arm-linux-gnueabihf-gcc\"
+    - rustup target add $TRIPLET
+    - echo -e "\e[0Ksection_end:`date +%s`:crossdeps\r\e[0K"
+
+.build_release: &build_release
+    - echo -e "\e[0Ksection_start:`date +%s`:build\r\e[0KBuild"
+    - cargo build --color always --target $TRIPLET --config target.$TRIPLET.linker=$LINKER --release
+    - echo -e "\e[0Ksection_end:`date +%s`:build\r\e[0K"
+
+.publish_script: &publish_script
+    - echo -e "\e[0Ksection_start:`date +%s`:cddeps\r\e[0KInstall delivery dependencies"
+    - apt-get install -y --no-install-recommends curl jq
+    - echo -e "\e[0Ksection_end:`date +%s`:cddeps\r\e[0K"
+    - echo -e "\e[0Ksection_start:`date +%s`:delivery\r\e[0KUpload binaries to package registry"
+    # NB: require TRIPLET
+    - ./ci-tools/upload-bin ipdisscan
+    - ./ci-tools/upload-bin ipdisserver
+    - echo -e "\e[0Ksection_end:`date +%s`:delivery\r\e[0K"
+
+.default_cache: &default_cache
+    paths:
+        - .cargo/
+        - target/
+    key:
+        files: [Cargo.lock] # share the cache among all jobs having same lockfile
+    policy: pull # optimization for parallel jobs
 
 default:
+    image: rust:bullseye
+        # NOTE: amd64/rust:* fails because postgres name is not resolved O_o
+        # NOTE: x86 only is enough, testing in docker for armv7 is useless, should
+        #       be done directly on a RPi with shell executor, but is complex and
+        #       slow and requires a lot of setup (also fails to resolve service)
+    cache:
+        <<: *default_cache
+
+# BUILD
+
+build:
+    stage: build
     before_script:
-        - rustc --version
-        - cargo --version
+        - uname -a && rustc --version && cargo --version
+        - *install_amd64_build_deps
+    script: cargo build --verbose --color always
+    after_script:
+        - echo "Adding packages used by subsequent jobs to cache."
+    cache:
+        <<: *default_cache
+        policy: pull-push # create cache to be used by subsequent parallel jobs
 
-stages:
-    - test
+# TEST
 
-test-code:
-    stage: test
-    script:
-        - cargo test
-        - cargo install cargo-tarpaulin
-        - cargo tarpaulin --ignore-tests
-
-lint-code:
-    stage: test
-    script:
-        - rustup component add clippy
-        - cargo clippy -- -D warnings
-
-format-code:
-    stage: test
-    script:
-        - rustup component add rustfmt
-        - cargo fmt -- --check
-
-audit-code:
-    stage: test
-    script:
+audit:
+    before_script:
+        - echo -e "\e[0Ksection_start:`date +%s`:instaudit\r\e[0KInstall auditing tool"
         - cargo install cargo-audit
-        - cargo audit
+        - echo -e "\e[0Ksection_end:`date +%s`:instaudit\r\e[0K"
+    script: cargo audit --color always
+    cache:
+        key: $CI_JOB_NAME # contains only cargo-audit and works on Cargo.lock
+        paths: [.cargo/]
+        unprotect: true
+        when: always
 
-audit-deps:
-    stage: test
+lint:
+    before_script:
+        - *install_amd64_build_deps
+        - rustup component add clippy
+    script: cargo clippy --color always -- --deny warnings --forbid unsafe_code
+
+test:
+    services: [postgres:13]
+    before_script:
+        - *install_amd64_build_deps
+    script: cargo test --color always
+
+format:
+    before_script:
+        - rustup component add rustfmt
+    script: cargo fmt -- --check
+    cache: []
+
+# DEPLOY
+
+.delivery:
+    stage: deploy
+    # NOTE: why not avoiding cross-compilation with arm32v7/rust? can't work on emulated HW:
+    #       https://github.com/rust-lang/cargo/issues/9545
+    # NOTE: why not avoiding cross-compilation running on a RPi (with tags:)?
+    #       1. fails because it's unable to resolve service (even with FF_NETWORK_PER_BUILD
+    #          https://docs.gitlab.com/runner/executors/docker.html#create-a-network-for-each-job)
+    #       2. slow and space constrained
+    rules: # https://docs.gitlab.com/ee/ci/jobs/job_control.html
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    before_script:
+        - uname -a && rustc --version && cargo --version
+        - *install_armv7_build_deps
+
+publish-armv7:
+    extends: .delivery
     script:
-        - cargo install cargo-outdated
-        - cargo outdated --color=always --root-deps-only --exit-code 255 -v
+        - *build_release
+        #- *publish_script
