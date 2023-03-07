@@ -3,6 +3,7 @@ name = "ipdisscan"
 version = "2.0.0-alpha.1"
 edition = "2021"
 description = "Scan for ipdisserver instances in the network."
+authors = ["LanQuil <@lanquil:matrix.org>"]
 license = "MPL-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -21,6 +22,8 @@ tracing-error = "0.2.0"
 tracing-subscriber = "0.3.1"
 tui = { version = "0.19", default-features = false, features = ['crossterm'] }
 tracing-appender = "0.2.2"
+figment = { version = "0.10.8", features = ["env", "toml"] }
 
 [dev-dependencies]
 tracing-test = "0.2"
+insta = { version = "1.26.0", features = ["ron"] }

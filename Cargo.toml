@@ -6,3 +6,13 @@ members = [
     "ipdisscan",
     "ipdisserver",
 ]
+
+[profile.dev.package.insta]
+# Insta benefits from being compiled in release mode, even as dev dependency
+opt-level = 3
+
+[profile.dev.package.similar]
+opt-level = 3
+
+[profile.dev.package.sqlx-macros]
+opt-level = 3
