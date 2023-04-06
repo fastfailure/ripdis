@@ -8,6 +8,7 @@
     cargo-tarpaulin
     cargo-audit
     cargo-auditable
+    cargo-outdated
     cargo-insta # https://github.com/mitsuhiko/insta
     codespell
 
