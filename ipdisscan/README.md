@@ -15,7 +15,7 @@ running.
 
 ## About
 
-![ipdisscan screenshot](./img/screenshots/ipdisscan.png)
+![ipdisscan screenshot](./assets/screenshots/ipdisscan.png)
 
 `ipdisscan` continuously send UDP broadcast datagrams (by default from port
 1902), containing a signature recognized by running ipdisserver instances.
