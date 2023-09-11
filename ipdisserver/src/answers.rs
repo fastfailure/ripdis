@@ -12,7 +12,7 @@ const FALLBACK_INFO_KEY: &str = "info";
 
 pub type BeaconInfos = serde_json::map::Map<String, Value>;
 
-/// Expecting one ore more lines formatted according to https://docs.mender.io/3.0/client-installation/inventory
+/// Expecting one or more lines formatted according to https://docs.mender.io/3.0/client-installation/inventory
 pub trait FromCmdOutput {
     fn from_cmd_output(lines: &str) -> Result<BeaconInfos, Report>;
 }

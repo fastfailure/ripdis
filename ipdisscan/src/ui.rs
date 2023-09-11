@@ -188,7 +188,7 @@ fn draw_frame(terminal: &mut ConcreteTerminal, app: &mut App) -> Result<(), Repo
 
         // Info block
         let info = Paragraph::new(info_text)
-            .block(Block::default().title("Informations").borders(Borders::ALL))
+            .block(Block::default().title("Information").borders(Borders::ALL))
             .style(Style::default().fg(Color::White).bg(Color::Black))
             .alignment(Alignment::Left)
             .wrap(Wrap { trim: false });

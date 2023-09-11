@@ -9,7 +9,7 @@
 
 <!--Font: ANSI Shadow-->
 
-ipdisscan: scan the network broadcast domain and collect informations about
+ipdisscan: scan the network broadcast domain and collect information about
 systems where an instance of [ipdisserver](../ipdisserver/README.md) is
 running.
 
@@ -20,7 +20,7 @@ running.
 `ipdisscan` continuously send UDP broadcast datagrams (by default from port
 1902), containing a signature recognized by running ipdisserver instances.
 
-Informations contained in ipdisserver answers are collected and reported in a
+Information contained in ipdisserver answers are collected and reported in a
 simil-YAML format, being continuously updated.
 
 ## Usage

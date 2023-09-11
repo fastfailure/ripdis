@@ -112,8 +112,8 @@ mod test {
             send_single(&socket, Ipv4Addr::BROADCAST, listener_port, &signatures).unwrap();
         });
 
-        let (lenght, _source) = listener_socket.recv_from(&mut buf).unwrap();
-        assert_eq!(lenght, signature.0.len());
+        let (length, _source) = listener_socket.recv_from(&mut buf).unwrap();
+        assert_eq!(length, signature.0.len());
         assert_eq!(buf.to_vec(), signature.0);
         sender_handle.join().unwrap();
     }

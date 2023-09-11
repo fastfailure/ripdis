@@ -131,9 +131,9 @@ fn receive(socket: &UdpSocket) -> Result<(SocketAddr, Signature), Report> {
     // the message, it will be cut off.
     let mut buf = [0; RECV_BUFFER_LENGHT];
     trace!(?socket, "Listening.");
-    let (lenght, source) = socket.recv_from(&mut buf)?;
-    let received: Signature = (&buf[..lenght]).into();
-    trace!(%lenght, %source, "Datagram received.");
+    let (length, source) = socket.recv_from(&mut buf)?;
+    let received: Signature = (&buf[..length]).into();
+    trace!(%length, %source, "Datagram received.");
     Ok((source, received))
 }
 

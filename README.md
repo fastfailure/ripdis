@@ -11,7 +11,7 @@
 
 ![ipdisscan screenshot](./ipdisscan/img/screenshots/ipdisscan.png)
 
-Use UDP broadcasting to discover devices and report informations about systems
+Use UDP broadcasting to discover devices and report information about systems
 in the Local Area Network.
 
 This project include a server part, `ipdisserver` and a client part,
@@ -24,4 +24,4 @@ Both tools have CLI options to change the default behaviour.
 
 See [ipdisserver README](ipdisserver/README.md)
 and [ipdisscan README](ipdisscan/README.md)
-for more informations.
+for more information.

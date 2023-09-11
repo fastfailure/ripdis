@@ -27,9 +27,9 @@ fn serve_single(
 fn receive(socket: &UdpSocket) -> Result<BeaconAnswer, Report> {
     let mut buf = [0; RECV_BUFFER_LENGHT];
     trace!(?socket, "Listening.");
-    let (lenght, source) = socket.recv_from(&mut buf)?;
-    let payload: Answer = (&buf[..lenght]).into();
-    debug!(%lenght, %source, "Datagram received.");
+    let (length, source) = socket.recv_from(&mut buf)?;
+    let payload: Answer = (&buf[..length]).into();
+    debug!(%length, %source, "Datagram received.");
     Ok(BeaconAnswer {
         addr: source.ip(),
         payload,
