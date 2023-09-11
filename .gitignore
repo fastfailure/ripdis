@@ -1,7 +1,9 @@
 /target
+.*.swp
 
 # Devenv
 .devenv*
 devenv.local.nix
 .pre-commit-config.yaml
 /.env
+/.direnv

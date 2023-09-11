@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Dependencies: jq
+
+set -e
+
+# Print version of given workspace package.
+get_version() {
+    if [[ -z $1 ]]; then
+        echo >&2 "name argument is mandatory"
+        exit 1
+    fi
+    local name="$1"
+    version=$(cargo metadata --format-version 1 --no-deps | jq '.packages[] | select(.name == "'"$name"'") | {version}' | jq --exit-status -r .version)
+    if [[ ! $version =~ ^[0-9] ]]; then
+        echo >&2 "invalid version for ${name}: ${version}"
+        exit 1
+    fi
+    echo "$version"
+}
+
+get_version "$1"

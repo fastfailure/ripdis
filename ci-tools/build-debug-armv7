@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# See .gitlab-ci.yml for more info
+
+set -ue
+
+export PKG_CONFIG_PATH="/usr/lib/arm-linux-gnueabihf/pkgconfig"
+export PKG_CONFIG_ALLOW_CROSS="true"
+TRIPLET="armv7-unknown-linux-gnueabihf"
+LINKER='"arm-linux-gnueabihf-gcc"'
+
+export SQLX_OFFLINE="true" # https://github.com/launchbadge/sqlx/blob/main/sqlx-cli/README.md#force-building-in-offline-mode
+
+SSH_KNOWN_HOSTS_FILE="/run/secrets/ssh_known_hosts"
+SSH_PRIVATE_KEY_FILE="/run/secrets/ssh_private_key"
+
+function setup_ssh() {
+    install -d -m700 ~/.ssh
+    cp "$SSH_KNOWN_HOSTS_FILE" ~/.ssh/known_hosts
+    eval "$(ssh-agent -s)"
+    ssh-add "$SSH_PRIVATE_KEY_FILE"
+    git config --global user.email "$(hostname)@ceamgroup.it"
+    git config --global user.name "$(hostname)"
+}
+
+function install_generic_sys_deps() {
+    apt-get install -y --no-install-recommends build-essential gcc-arm-linux-gnueabihf pkg-config libc-dev-armhf-cross
+    rustup target add "$TRIPLET"
+}
+
+function install_specific_sys_deps() {
+    dpkg --add-architecture armhf
+    apt-get update -y
+    apt-get install -y libdbus-1-dev:armhf
+}
+
+function build() {
+    cargo build --color always --target "$TRIPLET" --config "target.${TRIPLET}.linker=${LINKER}"
+}
+
+function main() {
+    uname -a
+    rustc --version
+    cargo --version
+    setup_ssh
+    install_specific_sys_deps
+    install_generic_sys_deps
+    build
+}
+
+main
