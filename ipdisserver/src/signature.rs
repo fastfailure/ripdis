@@ -15,9 +15,7 @@ impl fmt::Display for Signature {
 
 impl From<&str> for Signature {
     fn from(string: &str) -> Self {
-        Self(Bytes::copy_from_slice(
-            &string.bytes().into_iter().collect::<Vec<u8>>(),
-        ))
+        Self(Bytes::copy_from_slice(&string.bytes().collect::<Vec<u8>>()))
     }
 }
 

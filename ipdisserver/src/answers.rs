@@ -236,7 +236,7 @@ mod test {
         let mut permissions = metadata.permissions();
         permissions.set_mode(0o755);
         file.set_permissions(permissions).unwrap();
-        path.into()
+        path
     }
 
     #[test]

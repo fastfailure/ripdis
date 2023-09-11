@@ -16,7 +16,7 @@ const RATE_LIMIT_TIMEOUT: Duration = Duration::from_secs(10); // do not accept m
 pub fn run(conf: &ServerConfig) -> Result<(), Report> {
     let socket = UdpSocket::bind(format!("{}:{}", conf.listening_addr, conf.port))?;
     info!(?socket, "Listening for scanner requests.");
-    let clock = Clock::default();
+    let clock = Clock;
     let mut rate_limiter = RateLimiter::new(&clock);
     loop {
         rate_limiter.conditional_reset();
@@ -161,7 +161,7 @@ mod test {
         let server_port = beacon_socket.local_addr().unwrap().port();
         let conf_clone = conf.clone();
         let server_handle = thread::spawn(move || {
-            let clock = Clock::default();
+            let clock = Clock;
             serve_single(
                 &beacon_socket,
                 &conf_clone.signatures,
